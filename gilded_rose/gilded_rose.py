@@ -6,34 +6,38 @@ class GildedRose(object):
         self.items = items
 
     def update_quality(self):
+        def increase_quality(item, increment=1):
+            item.quality = min(item.quality + increment, 50)
+
+        def decrease_sell_in(item):
+            item.sell_in -= 1
+
         for item in self.items:
-            if item.name != "Aged Brie" and item.name != "Backstage passes to a TAFKAL80ETC concert":
-                if item.quality > 0:
-                    if item.name != "Sulfuras, Hand of Ragnaros":
-                        item.quality = item.quality - 1
-            else:
-                if item.quality < 50:
-                    item.quality = item.quality + 1
-                    if item.name == "Backstage passes to a TAFKAL80ETC concert":
-                        if item.sell_in < 11:
-                            if item.quality < 50:
-                                item.quality = item.quality + 1
-                        if item.sell_in < 6:
-                            if item.quality < 50:
-                                item.quality = item.quality + 1
-            if item.name != "Sulfuras, Hand of Ragnaros":
-                item.sell_in = item.sell_in - 1
-            if item.sell_in < 0:
-                if item.name != "Aged Brie":
-                    if item.name != "Backstage passes to a TAFKAL80ETC concert":
-                        if item.quality > 0:
-                            if item.name != "Sulfuras, Hand of Ragnaros":
-                                item.quality = item.quality - 1
-                    else:
-                        item.quality = item.quality - item.quality
-                else:
-                    if item.quality < 50:
-                        item.quality = item.quality + 1
+            #Handled exceptions first and leave the loop early
+            if item.name == "Sulfuras, Hand of Ragnaros":
+                continue
+
+            if item.name == "Aged Brie":
+                increase_quality(item)
+                decrease_sell_in(item)
+                if item.sell_in < 0:
+                    increase_quality(item)
+                continue
+
+            if item.name == "Backstage passes to a TAFKAL80ETC concert":
+                increment = 3 if item.sell_in < 6 else 2 if item.sell_in < 11 else 1
+                increase_quality(item, increment)
+                item.sell_in -= 1
+                if item.sell_in < 0:
+                    item.quality = 0
+                continue
+
+            #added degradationFactor before perfoming changes to quality
+            degradationFactor = -1
+            if item.sell_in <= 0: #double the degradation factor after sell_in date
+                degradationFactor *= 2
+            item.quality = max(item.quality + degradationFactor, 0)
+            item.sell_in -= 1
 
 
 class Item:
