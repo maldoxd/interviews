@@ -33,7 +33,7 @@ class GildedRose(object):
                 continue
 
             #added degradationFactor before perfoming changes to quality
-            degradationFactor = -1
+            degradationFactor = -2 if item.name == "Conjured Mana Cake" else -1
             if item.sell_in <= 0: #double the degradation factor after sell_in date
                 degradationFactor *= 2
             item.quality = max(item.quality + degradationFactor, 0)
